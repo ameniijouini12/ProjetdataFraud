@@ -1,0 +1,42 @@
+<div class="sidebar">
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link" data-page="home" href="#">
+                <i class="fas fa-home"></i>
+                Home
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-page="start_thread" href="#">
+                <i class="fas fa-plus"></i>
+                Start New Thread
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-page="job_threads" href="#">
+                <i class="fas fa-search"></i>
+                Job Search Threads
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-page="saved_jobs" href="#">
+                <i class="fas fa-bookmark"></i>
+                Saved Jobs
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-page="explore" href="#">
+                <i class="fas fa-compass"></i>
+                Explore
+            </a>
+        </li>
+    </ul>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mettre à jour la classe active en fonction de la page actuelle
+    const currentPage = window.location.pathname.replace('/', '') || 'home';
+    document.querySelector(`[data-page="${currentPage}"]`).classList.add('active');
+});
+</script>

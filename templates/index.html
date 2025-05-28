@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" type=text/css href="/static/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
+
+  <title>Real or Fake Job Prediction</title>
+  <style>
+    .sidebar {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 100;
+      padding: 48px 0 0;
+      box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+      background-color: #343a40;
+      width: 250px;
+    }
+
+    .sidebar .nav-link {
+      color: #fff;
+      padding: 1rem 1.5rem;
+    }
+
+    .sidebar .nav-link:hover {
+      color: #01634d;
+    }
+
+    .sidebar .nav-link.active {
+      color: #01634d;
+    }
+
+    .main-content {
+      margin-left: 250px;
+      padding: 20px;
+    }
+
+    .sidebar .nav-link i {
+      margin-right: 10px;
+    }
+
+    .form-container {
+      display: flex;
+      gap: 30px;
+      align-items: flex-start;
+    }
+
+    .form-section {
+      flex: 1;
+    }
+
+    .location-section {
+      width: 300px;
+      margin-top: 20px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .location-container {
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .location-btn {
+      width: 100%;
+      padding: 10px;
+    }
+
+    .app-brand {
+      padding: 2rem 1.5rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .app-brand img {
+      width: 200px;
+      height: 100px;
+      margin-bottom: 10px;
+    }
+
+    .header-bar {
+      position: fixed;
+      top: 0;
+      right: 0;
+      left: 250px;
+      height: 70px;
+      background: #ffffff;
+      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+      z-index: 99;
+      display: flex;
+      align-items: center;
+      padding: 0 30px;
+    }
+
+    .header-bar .search-box {
+      position: relative;
+      width: 550px;
+      margin: 0 20px;
+    }
+
+    .header-bar .search-box .input-group {
+      width: 100%;
+      position: relative;
+    }
+
+    .header-bar .search-box input {
+      width: 100%;
+      height: 45px;
+      padding: 0 60px 0 25px;
+      border: 2px solid #eaeaea;
+      border-radius: 30px;
+      background: #f8f9fa;
+      font-size: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .header-bar .search-box input:focus {
+      border-color: #01634d;
+      background: #fff;
+      box-shadow: 0 0 0 5px rgba(1, 99, 77, 0.1);
+    }
+
+    .header-bar .search-box .btn {
+      position: absolute;
+      right: 5px;
+      top: 5px;
+      bottom: 5px;
+      width: 35px;
+      padding: 0;
+      border: none;
+      background: #01634d;
+      border-radius: 50%;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .header-bar .search-box .btn:hover {
+      background: #014d3b;
+      transform: scale(1.05);
+    }
+
+    .main-content {
+      margin-top: 60px;
+    }
+
+    .header-bar .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 25px;
+      margin-left: auto;
+    }
+
+    .header-bar .notification-icon {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #555;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+      background: #f8f9fa;
+    }
+
+    .header-bar .notification-icon:hover {
+      background: #01634d15;
+      color: #01634d;
+      transform: translateY(-2px);
+    }
+
+    .header-bar .notification-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: #dc3545;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      height: 18px;
+      width: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      border: 2px solid #fff;
+    }
+
+    .header-bar .user-menu .dropdown-toggle {
+      background: none;
+      border: none;
+      padding: 0;
+      color: #555;
+      transition: all 0.3s ease;
+    }
+
+    .header-bar .user-menu .dropdown-toggle:hover {
+      color: #01634d;
+    }
+
+    .header-bar .user-menu .dropdown-toggle i {
+      font-size: 1.8rem;
+    }
+
+    .header-bar .dropdown-menu {
+      margin-top: 15px;
+      border: none;
+      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+      padding: 15px 0;
+    }
+
+    .header-bar .dropdown-item {
+      padding: 12px 25px;
+      color: #555;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .header-bar .dropdown-item i {
+      width: 20px;
+      margin-right: 10px;
+      color: #01634d;
+    }
+
+    .header-bar .dropdown-item:hover {
+      background: #01634d15;
+      color: #01634d;
+    }
+
+    .header-bar .dropdown-divider {
+      margin: 10px 0;
+      border-top-color: #eee;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sidebar">
+
+    <ul class="nav flex-column">
+      <li class="nav-item">
+        <a class="nav-link active" href="{{ url_for('index') }}">
+          <i class="fas fa-home"></i>
+          Home
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('start_thread') }}">
+          <i class="fas fa-plus"></i>
+          Start New Thread
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('job_threads') }}">
+          <i class="fas fa-search"></i>
+          Job Search Threads
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">
+          <i class="fas fa-bookmark"></i>
+          Saved Jobs
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">
+          <i class="fas fa-compass"></i>
+          Explore
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="header-bar">
+    <div class="search-box">
+      <div class="input-group">
+        <input type="text" placeholder="Search for job opportunities..." autocomplete="off">
+        <button class="btn" type="button">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </div>
+    <div class="user-menu">
+      <a href="#" class="notification-icon">
+        <i class="fas fa-bell"></i>
+        <span class="notification-badge">3</span>
+      </a>
+      <a href="#" class="notification-icon">
+        <i class="fas fa-envelope"></i>
+        <span class="notification-badge">5</span>
+      </a>
+      <div class="dropdown">
+        <button class="btn btn-link dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
+          <i class="fas fa-user-circle fa-lg"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="#"><i class="fas fa-user"></i> Profile</a></li>
+          <li><a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Settings</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="container">
+      {% for message in get_flashed_messages() %}
+      <!-- <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {{message}}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div> -->
+      <div id="myModal" class="modal fade">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <!-- dialog body -->
+            <div class="modal-body">
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+              {% if message=='FRAUDULENT JOB' %}
+              <div class="flx">
+                <img src="../static/down.png" alt="downguy">
+                <span class="ms">{{message}}</span>
+              </div>
+              {% else %}
+              <div class="flxs">
+                <img class="imgup" src="../static/up.png" alt="upguy">
+                <span class="mss">{{message}}</span>
+              </div>
+              {% endif %}
+
+            </div>
+            <!-- dialog buttons -->
+            <div class="modal-footer"><button type="button" class="btn btn-primary ok">OK</button></div>
+          </div>
+        </div>
+      </div>
+
+      {% endfor %}
+      <h1 class="text-center">Real or Fake <span style="color:#01634d">Job Description</span> Classifier</h1>
+      <hr>
+
+      <div class="main-container">
+        <h1>?</h1>
+        <div class="imgbox">
+          <img src="../static/img1.png" alt="guy" class="guy">
+          <h2>Is it Real or Fake?</h2>
+          <h4>The Real or Fake Job Description Classifier is an automated tool using machine learning based classification
+            techniques to detect fraudulent or authentic description of a job postings.</h4>
+        </div>
+
+        <div class="form-container">
+          <div class="form-section">
+            <form action="{{ url_for('submit') }}" method="POST" enctype="multipart/form-data">
+              <input type="text" class="form-control title" rows="1" cols="100" id="title" name="title"
+                placeholder="Job Title">
+
+              <input type="text" class="form-control" rows="1" cols="100" id="title" name="department"
+                placeholder="Department">
+              <input type="text" class="form-control" rows="1" cols="100" id="title" name="ben" placeholder="Benefits">
+
+              <select name="emptype" required class="form-control form-select" aria-label="Default select example">
+                <option selected="true" class="placeholder" disabled="disabled" value="">Employment Type</option>
+                <option value="Fulltime">Full-Time</option>
+                <option value="Part Time">Part-Time</option>
+                <option value="Contract">Contract</option>
+                <option value="Temporary">Temporary</option>
+                <option value="Other">Other</option>
+              </select>
+
+              <select name="exp" required class="form-control form-select" aria-label="Default select example">
+                <option selected="true" class="placeholder" disabled="disabled" value="">Required Experience</option>
+                <option value="Internship">Internship</option>
+                <option value="Mid-senior level">Mid-Senior Level</option>
+                <option value="Associate">Associate</option>
+                <option value="Entry level">Entry level</option>
+                <option value="Executive">Executive</option>
+                <option value="Director">Director</option>
+                <option value="Not applicable">Not applicable</option>
+                <option value="Other">Other</option>
+              </select>
+
+              <input type="text" class="form-control" rows="1" cols="100" id="title" name="edu"
+                placeholder="Required Education">
+              <input type="text" class="form-control" rows="1" cols="100" id="title" name="indu" placeholder="Industry">
+              <input type="text" class="form-control" rows="1" cols="100" id="title" name="func" placeholder="Function">
+              <textarea class="form-control desc" id="exampleFormControlTextarea1" rows="3" name="profile"
+                placeholder="Company Profile"></textarea>
+              <textarea class="form-control desc" id="exampleFormControlTextarea1" rows="3" name="req"
+                placeholder="Requirements"></textarea>
+              <textarea class="form-control desc" id="exampleFormControlTextarea1" rows="3" name="des"
+                placeholder="Description"></textarea>
+
+
+              <button type="submit" class="button-34" data-toggle="modal" data-target="#successModal">Predict</button>
+
+            </form>
+          </div>
+
+        
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+<script>
+  $('#myModal').on('show.bs.modal', function () {      // wire up the OK button to dismiss the modal when shown
+    $('#myModal .modal-footer .btn').on('click', function (e) {
+      console.log('button pressed');              // just as an example...
+      $('#myModal').modal('hide');                // dismiss the dialog
+    });
+  });
+
+  $('#myModal').on('hide.bs.modal', function () {      // remove the event listeners when the dialog is dismissed
+    $('#myModal a.btn').off('click');
+  });
+
+  $('#myModal').on('hidden.bs.modal', function () {    // remove the actual elements from the DOM when fully hidden
+    $('#myModal').remove();
+  });
+
+  $('#myModal').modal({                               // wire up the actual modal functionality and show the dialog
+    'backdrop': 'static',
+    'keyboard': true,
+    'show': true                              // ensure the modal is shown immediately
+  });
+
+  function getLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(showPosition, showError);
+    } else {
+      alert("Geolocation is not supported by this browser.");
+    }
+  }
+
+  function showPosition(position) {
+    const latitude = position.coords.latitude;
+    const longitude = position.coords.longitude;
+
+    // Reverse geocoding to get address
+    const geocoder = new google.maps.Geocoder();
+    const latlng = { lat: parseFloat(latitude), lng: parseFloat(longitude) };
+
+    geocoder.geocode({ location: latlng }, (results, status) => {
+      if (status === "OK") {
+        if (results[0]) {
+          document.getElementById("location").value = results[0].formatted_address;
+        } else {
+          alert("No results found");
+        }
+      } else {
+        alert("Geocoder failed due to: " + status);
+      }
+    });
+  }
+
+  function showError(error) {
+    switch(error.code) {
+      case error.PERMISSION_DENIED:
+        alert("User denied the request for Geolocation.");
+        break;
+      case error.POSITION_UNAVAILABLE:
+        alert("Location information is unavailable.");
+        break;
+      case error.TIMEOUT:
+        alert("The request to get user location timed out.");
+        break;
+      case error.UNKNOWN_ERROR:
+        alert("An unknown error occurred.");
+        break;
+    }
+  }
+</script>
+
+</html>
