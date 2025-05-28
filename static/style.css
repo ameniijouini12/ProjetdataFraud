@@ -251,3 +251,11 @@ img {
     width: 5%;
     height: 100%;
 }
+
+body {
+  background-color: #f9f9f9;
+}
+
+textarea {
+  resize: vertical;
+}

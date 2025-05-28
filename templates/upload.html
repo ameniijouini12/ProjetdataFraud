@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block title %}Predict{% endblock %}
+{% block content %}
+<h2>Check Job Offer</h2>
+<form method="post">
+  <textarea name="job_text" rows="8" cols="60" placeholder="Paste job description here"></textarea><br><br>
+  <input type="submit" value="Predict">
+</form>
+{% if prediction is not none %}
+  <h3>Prediction: {{ 'Fraudulent' if prediction == 1 else 'Legitimate' }}</h3>
+{% endif %}
+{% endblock %}

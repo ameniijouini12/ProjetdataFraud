@@ -1,0 +1,28 @@
+image: python:3.8
+
+stages:
+  - test
+  - quality
+  - deploy
+
+test:
+  stage: test
+  script:
+    - pip install -r requirements.txt
+    - python -m pytest tests/
+
+code_quality:
+  stage: quality
+  script:
+    - pip install pylint coverage
+    - pylint app.py
+    - coverage run -m pytest
+    - coverage report
+
+deploy:
+  stage: deploy
+  script:
+    - pip install gunicorn
+    - gunicorn app:app
+  only:
+    - main
