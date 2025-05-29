@@ -1,0 +1,268 @@
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 250px;
+  background: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sidebar-logo {
+  width: 100%;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.sidebar-logo .logo {
+  width: 120px;
+  height: auto;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-logo .logo:hover {
+  transform: scale(1.05);
+}
+
+.sidebar .nav-link {
+  color: #fff;
+  padding: 1rem 1.5rem;
+}
+
+.sidebar .nav-link:hover {
+  color: #01634d;
+}
+
+.sidebar .nav-link.active {
+  color: #01634d;
+}
+
+.main-content {
+  margin-left: 250px;
+  padding: 20px;
+  margin-top: 60px;
+}
+
+.sidebar .nav-link i {
+  margin-right: 10px;
+}
+
+.form-container {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+}
+
+.form-section {
+  flex: 1;
+}
+
+.location-section {
+  width: 300px;
+  margin-top: 20px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.location-container {
+  flex-direction: column;
+  gap: 15px;
+}
+
+.location-btn {
+  width: 100%;
+  padding: 10px;
+}
+
+.app-brand {
+  padding: 2rem 1.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.app-brand img {
+  width: 200px;
+  height: 100px;
+  margin-bottom: 10px;
+}
+
+.header-bar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 250px;
+  height: 70px;
+  background: #ffffff;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  padding: 0 30px;
+}
+
+.header-bar .search-box {
+  position: relative;
+  width: 550px;
+  margin: 0 20px;
+}
+
+.header-bar .search-box .input-group {
+  width: 100%;
+  position: relative;
+}
+
+.header-bar .search-box input {
+  width: 100%;
+  height: 45px;
+  padding: 0 60px 0 25px;
+  border: 2px solid #eaeaea;
+  border-radius: 30px;
+  background: #f8f9fa;
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+
+.header-bar .search-box input:focus {
+  border-color: #01634d;
+  background: #fff;
+  box-shadow: 0 0 0 5px rgba(1, 99, 77, 0.1);
+}
+
+.header-bar .search-box .btn {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  bottom: 5px;
+  width: 35px;
+  padding: 0;
+  border: none;
+  background: #01634d;
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.header-bar .search-box .btn:hover {
+  background: #014d3b;
+  transform: scale(1.05);
+}
+
+.header-bar .user-menu {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  margin-left: auto;
+}
+
+.header-bar .notification-icon {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #555;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+  background: #f8f9fa;
+}
+
+.header-bar .notification-icon:hover {
+  background: #01634d15;
+  color: #01634d;
+  transform: translateY(-2px);
+}
+
+.header-bar .notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #dc3545;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  height: 18px;
+  width: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+.button-34 {
+  background: #01634d;
+  border-radius: 999px;
+  box-shadow: #01634d 0 10px 20px -10px;
+  box-sizing: border-box;
+  color: #FFFFFF;
+  cursor: pointer;
+  font-family: Inter,Helvetica,"Apple Color Emoji","Segoe UI Emoji",NotoColorEmoji,"Noto Color Emoji","Segoe UI Symbol","Android Emoji",EmojiSymbols,-apple-system,system-ui,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans",sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+  opacity: 1;
+  outline: 0 solid transparent;
+  padding: 8px 18px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  width: fit-content;
+  word-break: break-word;
+  border: 0;
+  margin-top: 20px;
+}
+
+.flx, .flxs {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.ms, .mss {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.ms {
+  color: #dc3545;
+}
+
+.mss {
+  color: #198754;
+}
+
+.imgbox {
+  text-align: center;
+  margin: 30px 0;
+}
+
+.guy {
+  max-width: 300px;
+  margin-bottom: 20px;
+}
+
+.form-control {
+  margin-bottom: 15px;
+}
+
+.title {
+  font-size: 1.2em;
+  font-weight: 500;
+}
+
+.desc {
+  min-height: 100px;
+}

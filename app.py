@@ -1,13 +1,14 @@
 import pandas as pd
 import numpy as np
 import pickle
-from flask import Flask, render_template, request, jsonify, flash, redirect, url_for
+from flask import Flask, render_template, request, jsonify, flash, redirect, url_for, session
 from datetime import datetime
 import re
 from urllib.parse import urlparse
 import openai
 from typing import Dict
 import json
+from functools import wraps
 
 
 app = Flask(__name__)
@@ -75,8 +76,18 @@ class AIJobAnalyzer:
         except Exception as e:
             return {"error": str(e)}
 
+# Login required decorator
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'logged_in' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 @app.route("/")
 @app.route("/index")
+@login_required
 def index():
     return render_template('index.html')
 
@@ -104,6 +115,7 @@ def submit():
         return render_template('index.html')
 
 @app.route('/job-threads')
+@login_required
 def job_threads():
     # Passer les 5 dernières analyses à la template
     recent_analyses = list(reversed(job_analyses[-5:]))
@@ -198,76 +210,10 @@ def view_analysis(analysis_id):
     # Récupérer l'analyse spécifique pour le partage
     # Dans une vraie application, cela viendrait d'une base de données
     return render_template('job_threads.html', shared_analysis_id=analysis_id)
-
-@app.route('/start-thread')
+@app.route('/start_thread')
+@login_required  # Ajout du décorateur login_required
 def start_thread():
-    return render_template('start_thread.html')
-
-@app.route('/chat-predict', methods=['POST'])
-def chat_predict():
-    message = request.form.get('message')
-    location = request.form.get('location')
-    job_data = request.form.get('jobData')
-
-    if job_data:
-        job_data = json.loads(job_data)
-        # Préparer les données pour le modèle
-        input_text = f"{job_data.get('title', '')} {location} {job_data.get('description', '')}"
-        
-        # Vectorisation du texte
-        input_features = vectorizer.transform([input_text])
-        
-        # Prédiction avec le modèle
-        prediction = model.predict(input_features)[0]
-        probability = model.predict_proba(input_features)[0]
-
-        # Déterminer la langue de réponse
-        lang = detect_language(message)
-        responses = {
-            'ar': {
-                1: "تحذير! هذا العرض يبدو مشبوهاً (ثقة: {:.0f}%)",
-                0: "هذا العرض يبدو شرعياً (ثقة: {:.0f}%)"
-            },
-            'fr': {
-                1: "Attention! Cette offre semble frauduleuse (confiance: {:.0f}%)",
-                0: "Cette offre semble légitime (confiance: {:.0f}%)"
-            },
-            'en': {
-                1: "Warning! This job posting appears to be fraudulent (confidence: {:.0f}%)",
-                0: "This job posting appears to be legitimate (confidence: {:.0f}%)"
-            }
-        }
-
-        # Calculer le pourcentage de confiance
-        confidence = probability[1] if prediction == 1 else probability[0]
-        response_text = responses[lang][prediction].format(confidence * 100)
-
-        return jsonify({
-            'response': response_text,
-            'is_fraudulent': bool(prediction),
-            'confidence': confidence
-        })
-
-    return jsonify({
-        'response': get_chatbot_response(message, detect_language(message))
-    })
-
-def get_chatbot_response(message, location):
-    responses = {
-        'greeting': f"Hello! I see you're in {location}. Would you like me to help predict job legitimacy in your area?",
-        'help': "I can help you analyze job postings for potential fraud. Just share the job details with me!",
-        'location': f"I'll focus on job postings in {location}. What kind of job are you interested in?",
-        'default': "I'm here to help you identify fraudulent job postings. Would you like to analyze a specific job?"
-    }
-
-    message = message.lower()
-    if any(word in message for word in ['hello', 'hi', 'hey']):
-        return responses['greeting']
-    elif any(word in message for word in ['help', 'how']):
-        return responses['help']
-    elif 'location' in message or location.lower() in message:
-        return responses['location']
-    return responses['default']
+    return render_template('start_thread.html', active_page='new_thread')
 
 def is_valid_url(url):
     try:
@@ -276,46 +222,157 @@ def is_valid_url(url):
     except:
         return False
 
-def check_url_fraudulent(url):
-    # Liste de patterns suspects
-    suspicious_patterns = [
-        r'fake',
-        r'scam',
-        r'free-money',
-        r'work-from-home-\d+',
-        r'get-rich',
-        r'earn-fast'
+@app.route('/chat-predict', methods=['POST'])
+def chat_predict():
+    message = request.form.get('message', '').strip()
+    
+    # Process the message
+    try:
+        input_features = vectorizer.transform([message])
+        prediction = model.predict(input_features)[0]
+        probability = model.predict_proba(input_features)[0]
+        confidence = probability[1] if prediction == 1 else probability[0]
+        
+        details = []
+        if prediction == 1:
+            details = [
+                "Contains suspicious patterns or keywords",
+                "High risk indicators detected in the text",
+                "Please verify the source carefully"
+            ]
+        else:
+            details = [
+                "Standard job posting format detected",
+                "Professional language used",
+                "Common industry terms present"
+            ]
+
+        response = {
+            'is_fraudulent': bool(prediction),
+            'confidence': float(confidence),
+            'response': "This job posting appears to be fraudulent!" if prediction == 1 
+                       else "This job posting appears to be legitimate.",
+            'details': details
+        }
+        
+        return jsonify(response)
+        
+    except Exception as e:
+        print(f"Error in chat_predict: {str(e)}")
+        return jsonify({
+            'error': 'Analysis failed',
+            'message': 'Unable to process the request'
+        }), 500
+
+def analyze_text_content(text):
+    details = []
+    suspicious_keywords = [
+        'urgent', 'quick', 'easy money', 'investment required',
+        'work from home', 'no experience needed', 'guaranteed income',
+        'immediate start', 'unlimited earnings', 'be your own boss'
     ]
     
-    url_lower = url.lower()
+    professional_keywords = [
+        'qualifications', 'experience', 'skills required', 'degree',
+        'responsibilities', 'requirements', 'benefits package'
+    ]
     
-    # Vérification des patterns suspects
-    for pattern in suspicious_patterns:
-        if re.search(pattern, url_lower):
-            return True
-            
-    # Vérification du domaine
-    trusted_domains = ['linkedin.com', 'indeed.com', 'glassdoor.com', 'google.com']
+    # Check suspicious keywords
+    found_suspicious = [word for word in suspicious_keywords if word in text.lower()]
+    if found_suspicious:
+        details.append(f"Suspicious terms detected: {', '.join(found_suspicious)}")
+    
+    # Check professional keywords
+    found_professional = [word for word in professional_keywords if word in text.lower()]
+    if found_professional:
+        details.append(f"Professional terms found: {', '.join(found_professional)}")
+    
+    # Check for salary patterns
+    salary_pattern = r'\$\d+[k]?(?:\s*-\s*\$\d+[k]?)?(?:\s*(?:per|\/)\s*(?:hour|month|year|annum))?'
+    if re.search(salary_pattern, text, re.IGNORECASE):
+        details.append("Salary information included")
+    
+    return details
+
+def generate_text_response(is_fraudulent, confidence, details):
+    confidence_pct = int(confidence * 100)
+    
+    if is_fraudulent:
+        if confidence_pct > 80:
+            response = f"⚠️ High Risk Alert! This job posting appears to be fraudulent (Confidence: {confidence_pct}%)"
+        else:
+            response = f"🚨 Warning! This job posting contains suspicious elements (Confidence: {confidence_pct}%)"
+    else:
+        if confidence_pct > 80:
+            response = f"✅ This appears to be a legitimate job posting (Confidence: {confidence_pct}%)"
+        else:
+            response = f"👍 This job posting seems legitimate, but please verify independently (Confidence: {confidence_pct}%)"
+    
+    if details:
+        response += "\n\nAnalysis Details:"
+        for detail in details:
+            response += f"\n• {detail}"
+    
+    return response
+
+def generate_url_response(is_fraudulent, details):
+    if is_fraudulent:
+        response = "⚠️ Warning! This URL shows potential signs of fraud:"
+    else:
+        response = "✅ This URL appears to be from a legitimate job site:"
+    
+    if details:
+        response += "\n\nFindings:"
+        for detail in details:
+            response += f"\n• {detail}"
+    
+    response += "\n\nRecommendation: "
+    response += "Please exercise caution and verify independently." if is_fraudulent else "Proceed with standard due diligence."
+    
+    return response
+
+def analyze_url_details(url):
+    details = []
     domain = urlparse(url).netloc.lower()
     
-    if not any(td in domain for td in trusted_domains):
-        # Si le domaine n'est pas dans la liste de confiance, vérification supplémentaire
-        suspicious_tlds = ['.xyz', '.tk', '.ml', '.ga', '.cf']
-        if any(tld in domain for tld in suspicious_tlds):
-            return True
+    if not any(td in domain for td in ['linkedin.com', 'indeed.com', 'glassdoor.com']):
+        details.append("Website is not a recognized job platform")
     
-    return False
+    return details
 
-@app.route('/dashboard')
-def dashboard():
-    analyses = st.session_state.get('analyses', [])
-    return render_template('dashboard.html', 
-                         name="User",  # Remplacer par le vrai nom d'utilisateur
-                         analyses=analyses)
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        
+        # Authentication logic
+        if username == 'Ameni' and password == '1234':
+            session['logged_in'] = True
+            session['username'] = username
+            flash('You were successfully logged in')
+            return redirect(url_for('index'))
+        else:
+            error = 'Invalid credentials. Please try again.'
+    
+    return render_template('login.html', error=error)
+
+# Logout route
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    session.pop('username', None)
+    flash('You were logged out')
+    return redirect(url_for('login'))
 
 @app.route('/analyze-job')
 def analyze_job():
     return redirect(url_for('job_threads'))
+
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html')
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5000)

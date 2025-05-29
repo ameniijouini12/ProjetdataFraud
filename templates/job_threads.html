@@ -9,6 +9,148 @@
     <link rel="stylesheet" type=text/css href="/static/style.css">
     <title>Job Search Threads</title>
     <style>
+        :root {
+            --primary: #01634d;
+            --primary-light: #01634d15;
+            --primary-dark: #014d3b;
+            --secondary: #343a40;
+            --success: #28a745;
+            --danger: #dc3545;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --border: #dee2e6;
+            --shadow: 0 5px 20px rgba(0,0,0,0.1);
+            --radius: 12px;
+        }
+
+        /* Modern Cards */
+        .thread-form {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 2.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .thread-form:hover {
+            transform: translateY(-5px);
+        }
+
+        .thread-card {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .thread-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        /* Modern Buttons */
+        .analyze-btn {
+            background: var(--primary);
+            color: white;
+            padding: 12px 25px;
+            border-radius: var(--radius);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        .analyze-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(1, 99, 77, 0.2);
+        }
+
+        /* Modern Form Controls */
+        .form-control {
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px 20px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-light);
+        }
+
+        /* Modern Badges */
+        .badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        /* Analysis Result Section */
+        .result-section {
+            border-radius: var(--radius);
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .result-success {
+            background: linear-gradient(145deg, #dcffe7, #baffd1);
+        }
+
+        .result-danger {
+            background: linear-gradient(145deg, #ffe7e7, #ffbaba);
+        }
+
+        /* Rating Stars Animation */
+        .rating-star {
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .rating-star:hover {
+            transform: rotate(72deg) scale(1.3);
+            color: #ffd700;
+        }
+
+        /* Loading Animation */
+        .loading {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+        }
+
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Modern Section Headers */
+        h3, h4 {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        h3:after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
         .sidebar {
             position: fixed;
             top: 0;
@@ -46,7 +188,7 @@
             display: flex;
             align-items: center;
             padding: 0 30px;
-            justify-content: space-between;
+            justify-content: flex-start; /* Change this line */
         }
 
         .header-bar .search-box {
@@ -278,42 +420,39 @@
         .share-menu.show {
             display: block;
         }
+
+        .new-job-btn {
+            background: var(--primary);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            border: none;
+            transition: all 0.3s ease;
+            margin-right: 20px;
+        }
+
+        .new-job-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(1, 99, 77, 0.2);
+            color: white;
+        }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('index') }}">
-                    <i class="fas fa-home"></i>
-                    Home
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('start_thread') }}">
-                    <i class="fas fa-plus"></i>
-                    Start New Thread
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" href="#">
-                    <i class="fas fa-search"></i> Job Search Threads
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-bookmark"></i> Saved Jobs
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-compass"></i> Explore
-                </a>
-            </li>
-        </ul>
-    </div>
-
+    {% with active_page='job_threads' %}
+    {% include 'components/sidebar.html' %}
+    {% endwith %}
+    
     <div class="header-bar">
+        <a href="{{ url_for('index') }}" class="btn new-job-btn">
+            <i class="fas fa-plus-circle"></i>
+            Start New Job
+        </a>
         <div class="search-box">
             <div class="input-group">
                 <input type="text" class="form-control" placeholder="Search for jobs...">
@@ -435,6 +574,21 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         $(document).ready(function() {
+            // Gestionnaire pour le bouton Start New Job
+            $('.new-job-btn').on('click', function(e) {
+                e.preventDefault();
+                
+                // Réinitialiser le formulaire
+                $('form')[0].reset();
+                
+                // Cacher les sections de résultat et de chargement
+                $('#loadingSection').hide();
+                $('#resultSection').hide();
+                
+                // Faire défiler jusqu'au formulaire
+                $('.thread-form')[0].scrollIntoView({ behavior: 'smooth' });
+            });
+            
             $('form').on('submit', function(e) {
                 e.preventDefault();
                 

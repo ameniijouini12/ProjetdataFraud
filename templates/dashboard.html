@@ -1,34 +1,44 @@
 {% extends "layout.html" %}
+
 {% block title %}Dashboard{% endblock %}
+
+{% block styles %}
+<style>
+    .dashboard-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #f8f9fa;
+        z-index: 1000;
+    }
+
+    .dashboard-image {
+        width: 86%;
+        height: 86%;
+       
+    }
+
+    /* Override layout margins for full screen */
+    .main-content {
+        margin: 0 !important;
+        padding: 0 !important;
+        min-height: 100vh !important;
+    }
+
+    /* Hide header and sidebar for full screen view */
+    .header-bar, .sidebar {
+        display: none !important;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Welcome, {{ name|default('User') }} 👋</h2>
-                <a href="{{ url_for('analyze_job') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Analyze New Job
-                </a>
-            </div>
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Recent Analyses</h5>
-                    {% if analyses %}
-                        {% for analysis in analyses %}
-                        <div class="alert {% if analysis.is_fraudulent %}alert-danger{% else %}alert-success{% endif %} mb-3">
-                            <h6>{{ analysis.title }}</h6>
-                            <p>{{ analysis.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
-                            <span class="badge {% if analysis.is_fraudulent %}bg-danger{% else %}bg-success{% endif %}">
-                                {{ 'Fraudulent' if analysis.is_fraudulent else 'Legitimate' }}
-                            </span>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-muted">No analyses yet. Start by analyzing a job posting!</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="dashboard-container">
+    <img src="{{ url_for('static', filename='powerbi.png') }}" alt="PowerBI Dashboard" class="dashboard-image">
 </div>
 {% endblock %}

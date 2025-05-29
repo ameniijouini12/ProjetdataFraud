@@ -212,7 +212,7 @@ select:invalid {
 
 img {
     width: 256px;
-    height: 361px;
+    height: auto;
 }
 
 .flx {
@@ -258,4 +258,49 @@ body {
 
 textarea {
   resize: vertical;
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 48px 0 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+    background-color: #343a40;
+    width: 250px;
+}
+
+.sidebar .nav-link {
+    color: #fff;
+    padding: 1rem 1.5rem;
+}
+
+.sidebar .nav-link:hover {
+    color: #01634d;
+}
+
+.sidebar .nav-link.active {
+    color: #01634d;
+}
+
+.header-bar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 250px;
+    height: 70px;
+    background: #ffffff;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+    z-index: 99;
+    display: flex;
+    align-items: center;
+    padding: 0 30px;
+}
+
+.header-bar .search-box {
+    position: relative;
+    width: 550px;
+    margin: 0 20px;
 }
