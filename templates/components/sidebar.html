@@ -1,0 +1,31 @@
+<div class="sidebar">
+    <div class="sidebar-logo">
+        <img src="{{ url_for('static', filename='logo_esprit.png') }}" alt="Logo" class="logo">
+    </div>
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link {% if active_page == 'home' %}active{% endif %}" href="{{ url_for('index') }}">
+                <i class="fas fa-home"></i>
+                Home
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if active_page == 'new_thread' %}active{% endif %}" href="{{ url_for('start_thread') }}">
+                <i class="fas fa-plus"></i>
+                Start New Thread
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if active_page == 'job_threads' %}active{% endif %}" href="{{ url_for('job_threads') }}">
+                <i class="fas fa-search"></i>
+                Job Search Threads
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-compass"></i>
+                Dashboard
+            </a>
+        </li>
+    </ul>
+</div>

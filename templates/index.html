@@ -256,243 +256,211 @@
 </head>
 
 <body>
-  <div class="sidebar">
+    {% with active_page='home' %}
+    {% include 'components/sidebar.html' %}
+    {% endwith %}
 
-    <ul class="nav flex-column">
-      <li class="nav-item">
-        <a class="nav-link active" href="{{ url_for('index') }}">
-          <i class="fas fa-home"></i>
-          Home
+    <div class="header-bar">
+      <div class="search-box">
+        <div class="input-group">
+          <input type="text" placeholder="Search for job opportunities..." autocomplete="off">
+          <button class="btn" type="button">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+      </div>
+      <div class="user-menu">
+        <a href="#" class="notification-icon">
+          <i class="fas fa-bell"></i>
+          <span class="notification-badge">3</span>
         </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{{ url_for('start_thread') }}">
-          <i class="fas fa-plus"></i>
-          Start New Thread
+        <a href="#" class="notification-icon">
+          <i class="fas fa-envelope"></i>
+          <span class="notification-badge">5</span>
         </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{{ url_for('job_threads') }}">
-          <i class="fas fa-search"></i>
-          Job Search Threads
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#">
-          <i class="fas fa-bookmark"></i>
-          Saved Jobs
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#">
-          <i class="fas fa-compass"></i>
-          Explore
-        </a>
-      </li>
-    </ul>
-  </div>
-
-  <div class="header-bar">
-    <div class="search-box">
-      <div class="input-group">
-        <input type="text" placeholder="Search for job opportunities..." autocomplete="off">
-        <button class="btn" type="button">
-          <i class="fas fa-search"></i>
-        </button>
+        <div class="dropdown">
+          <button class="btn btn-link dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
+            <i class="fas fa-user-circle fa-lg"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="#"><i class="fas fa-user"></i> Profile</a></li>
+            <li><a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Settings</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+          </ul>
+        </div>
       </div>
     </div>
-    <div class="user-menu">
-      <a href="#" class="notification-icon">
-        <i class="fas fa-bell"></i>
-        <span class="notification-badge">3</span>
-      </a>
-      <a href="#" class="notification-icon">
-        <i class="fas fa-envelope"></i>
-        <span class="notification-badge">5</span>
-      </a>
-      <div class="dropdown">
-        <button class="btn btn-link dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
-          <i class="fas fa-user-circle fa-lg"></i>
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end">
-          <li><a class="dropdown-item" href="#"><i class="fas fa-user"></i> Profile</a></li>
-          <li><a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Settings</a></li>
-          <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-        </ul>
-      </div>
-    </div>
-  </div>
 
-  <div class="main-content">
-    <div class="container">
-      {% for message in get_flashed_messages() %}
-      <!-- <div class="alert alert-warning alert-dismissible fade show" role="alert">
-        {{message}}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div> -->
-      <div id="myModal" class="modal fade">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <!-- dialog body -->
-            <div class="modal-body">
-              <button type="button" class="close" data-dismiss="modal">&times;</button>
-              {% if message=='FRAUDULENT JOB' %}
-              <div class="flx">
-                <img src="../static/down.png" alt="downguy">
-                <span class="ms">{{message}}</span>
-              </div>
-              {% else %}
-              <div class="flxs">
-                <img class="imgup" src="../static/up.png" alt="upguy">
-                <span class="mss">{{message}}</span>
-              </div>
-              {% endif %}
+    <div class="main-content">
+      <div class="container">
+        {% for message in get_flashed_messages() %}
+        <!-- <div class="alert alert-warning alert-dismissible fade show" role="alert">
+          {{message}}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div> -->
+        <div id="myModal" class="modal fade">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <!-- dialog body -->
+              <div class="modal-body">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                {% if message=='FRAUDULENT JOB' %}
+                <div class="flx">
+                  <img src="../static/down.png" alt="downguy">
+                  <span class="ms">{{message}}</span>
+                </div>
+                {% else %}
+                <div class="flxs">
+                  <img class="imgup" src="../static/up.png" alt="upguy">
+                  <span class="mss">{{message}}</span>
+                </div>
+                {% endif %}
 
+              </div>
+              <!-- dialog buttons -->
+              <div class="modal-footer"><button type="button" class="btn btn-primary ok">OK</button></div>
             </div>
-            <!-- dialog buttons -->
-            <div class="modal-footer"><button type="button" class="btn btn-primary ok">OK</button></div>
           </div>
         </div>
-      </div>
 
-      {% endfor %}
-      <h1 class="text-center">Real or Fake <span style="color:#01634d">Job Description</span> Classifier</h1>
-      <hr>
+        {% endfor %}
+        <h1 class="text-center">Real or Fake <span style="color:#01634d">Job Description</span> Classifier</h1>
+        <hr>
 
-      <div class="main-container">
-        <h1>?</h1>
-        <div class="imgbox">
-          <img src="../static/img1.png" alt="guy" class="guy">
-          <h2>Is it Real or Fake?</h2>
-          <h4>The Real or Fake Job Description Classifier is an automated tool using machine learning based classification
-            techniques to detect fraudulent or authentic description of a job postings.</h4>
-        </div>
-
-        <div class="form-container">
-          <div class="form-section">
-            <form action="{{ url_for('submit') }}" method="POST" enctype="multipart/form-data">
-              <input type="text" class="form-control title" rows="1" cols="100" id="title" name="title"
-                placeholder="Job Title">
-
-              <input type="text" class="form-control" rows="1" cols="100" id="title" name="department"
-                placeholder="Department">
-              <input type="text" class="form-control" rows="1" cols="100" id="title" name="ben" placeholder="Benefits">
-
-              <select name="emptype" required class="form-control form-select" aria-label="Default select example">
-                <option selected="true" class="placeholder" disabled="disabled" value="">Employment Type</option>
-                <option value="Fulltime">Full-Time</option>
-                <option value="Part Time">Part-Time</option>
-                <option value="Contract">Contract</option>
-                <option value="Temporary">Temporary</option>
-                <option value="Other">Other</option>
-              </select>
-
-              <select name="exp" required class="form-control form-select" aria-label="Default select example">
-                <option selected="true" class="placeholder" disabled="disabled" value="">Required Experience</option>
-                <option value="Internship">Internship</option>
-                <option value="Mid-senior level">Mid-Senior Level</option>
-                <option value="Associate">Associate</option>
-                <option value="Entry level">Entry level</option>
-                <option value="Executive">Executive</option>
-                <option value="Director">Director</option>
-                <option value="Not applicable">Not applicable</option>
-                <option value="Other">Other</option>
-              </select>
-
-              <input type="text" class="form-control" rows="1" cols="100" id="title" name="edu"
-                placeholder="Required Education">
-              <input type="text" class="form-control" rows="1" cols="100" id="title" name="indu" placeholder="Industry">
-              <input type="text" class="form-control" rows="1" cols="100" id="title" name="func" placeholder="Function">
-              <textarea class="form-control desc" id="exampleFormControlTextarea1" rows="3" name="profile"
-                placeholder="Company Profile"></textarea>
-              <textarea class="form-control desc" id="exampleFormControlTextarea1" rows="3" name="req"
-                placeholder="Requirements"></textarea>
-              <textarea class="form-control desc" id="exampleFormControlTextarea1" rows="3" name="des"
-                placeholder="Description"></textarea>
-
-
-              <button type="submit" class="button-34" data-toggle="modal" data-target="#successModal">Predict</button>
-
-            </form>
+        <div class="main-container">
+          <h1>?</h1>
+          <div class="imgbox">
+            <img src="../static/img1.png" alt="guy" class="guy">
+            <h2>Is it Real or Fake?</h2>
+            <h4>The Real or Fake Job Description Classifier is an automated tool using machine learning based classification
+              techniques to detect fraudulent or authentic description of a job postings.</h4>
           </div>
 
-        
+          <div class="form-container">
+            <div class="form-section">
+              <form action="{{ url_for('submit') }}" method="POST" enctype="multipart/form-data">
+                <input type="text" class="form-control title" rows="1" cols="100" id="title" name="title"
+                  placeholder="Job Title">
+
+                <input type="text" class="form-control" rows="1" cols="100" id="title" name="department"
+                  placeholder="Department">
+                <input type="text" class="form-control" rows="1" cols="100" id="title" name="ben" placeholder="Benefits">
+
+                <select name="emptype" required class="form-control form-select" aria-label="Default select example">
+                  <option selected="true" class="placeholder" disabled="disabled" value="">Employment Type</option>
+                  <option value="Fulltime">Full-Time</option>
+                  <option value="Part Time">Part-Time</option>
+                  <option value="Contract">Contract</option>
+                  <option value="Temporary">Temporary</option>
+                  <option value="Other">Other</option>
+                </select>
+
+                <select name="exp" required class="form-control form-select" aria-label="Default select example">
+                  <option selected="true" class="placeholder" disabled="disabled" value="">Required Experience</option>
+                  <option value="Internship">Internship</option>
+                  <option value="Mid-senior level">Mid-Senior Level</option>
+                  <option value="Associate">Associate</option>
+                  <option value="Entry level">Entry level</option>
+                  <option value="Executive">Executive</option>
+                  <option value="Director">Director</option>
+                  <option value="Not applicable">Not applicable</option>
+                  <option value="Other">Other</option>
+                </select>
+
+                <input type="text" class="form-control" rows="1" cols="100" id="title" name="edu"
+                  placeholder="Required Education">
+                <input type="text" class="form-control" rows="1" cols="100" id="title" name="indu" placeholder="Industry">
+                <input type="text" class="form-control" rows="1" cols="100" id="title" name="func" placeholder="Function">
+                <textarea class="form-control desc" id="exampleFormControlTextarea1" rows="3" name="profile"
+                  placeholder="Company Profile"></textarea>
+                <textarea class="form-control desc" id="exampleFormControlTextarea1" rows="3" name="req"
+                  placeholder="Requirements"></textarea>
+                <textarea class="form-control desc" id="exampleFormControlTextarea1" rows="3" name="des"
+                  placeholder="Description"></textarea>
+
+
+                <button type="submit" class="button-34" data-toggle="modal" data-target="#successModal">Predict</button>
+
+              </form>
+            </div>
+
+          
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</body>
-<script>
-  $('#myModal').on('show.bs.modal', function () {      // wire up the OK button to dismiss the modal when shown
-    $('#myModal .modal-footer .btn').on('click', function (e) {
-      console.log('button pressed');              // just as an example...
-      $('#myModal').modal('hide');                // dismiss the dialog
+  </body>
+  <script>
+    $('#myModal').on('show.bs.modal', function () {      // wire up the OK button to dismiss the modal when shown
+      $('#myModal .modal-footer .btn').on('click', function (e) {
+        console.log('button pressed');              // just as an example...
+        $('#myModal').modal('hide');                // dismiss the dialog
+      });
     });
-  });
 
-  $('#myModal').on('hide.bs.modal', function () {      // remove the event listeners when the dialog is dismissed
-    $('#myModal a.btn').off('click');
-  });
+    $('#myModal').on('hide.bs.modal', function () {      // remove the event listeners when the dialog is dismissed
+      $('#myModal a.btn').off('click');
+    });
 
-  $('#myModal').on('hidden.bs.modal', function () {    // remove the actual elements from the DOM when fully hidden
-    $('#myModal').remove();
-  });
+    $('#myModal').on('hidden.bs.modal', function () {    // remove the actual elements from the DOM when fully hidden
+      $('#myModal').remove();
+    });
 
-  $('#myModal').modal({                               // wire up the actual modal functionality and show the dialog
-    'backdrop': 'static',
-    'keyboard': true,
-    'show': true                              // ensure the modal is shown immediately
-  });
+    $('#myModal').modal({                               // wire up the actual modal functionality and show the dialog
+      'backdrop': 'static',
+      'keyboard': true,
+      'show': true                              // ensure the modal is shown immediately
+    });
 
-  function getLocation() {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(showPosition, showError);
-    } else {
-      alert("Geolocation is not supported by this browser.");
-    }
-  }
-
-  function showPosition(position) {
-    const latitude = position.coords.latitude;
-    const longitude = position.coords.longitude;
-
-    // Reverse geocoding to get address
-    const geocoder = new google.maps.Geocoder();
-    const latlng = { lat: parseFloat(latitude), lng: parseFloat(longitude) };
-
-    geocoder.geocode({ location: latlng }, (results, status) => {
-      if (status === "OK") {
-        if (results[0]) {
-          document.getElementById("location").value = results[0].formatted_address;
-        } else {
-          alert("No results found");
-        }
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition, showError);
       } else {
-        alert("Geocoder failed due to: " + status);
+        alert("Geolocation is not supported by this browser.");
       }
-    });
-  }
-
-  function showError(error) {
-    switch(error.code) {
-      case error.PERMISSION_DENIED:
-        alert("User denied the request for Geolocation.");
-        break;
-      case error.POSITION_UNAVAILABLE:
-        alert("Location information is unavailable.");
-        break;
-      case error.TIMEOUT:
-        alert("The request to get user location timed out.");
-        break;
-      case error.UNKNOWN_ERROR:
-        alert("An unknown error occurred.");
-        break;
     }
-  }
-</script>
+
+    function showPosition(position) {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+
+      // Reverse geocoding to get address
+      const geocoder = new google.maps.Geocoder();
+      const latlng = { lat: parseFloat(latitude), lng: parseFloat(longitude) };
+
+      geocoder.geocode({ location: latlng }, (results, status) => {
+        if (status === "OK") {
+          if (results[0]) {
+            document.getElementById("location").value = results[0].formatted_address;
+          } else {
+            alert("No results found");
+          }
+        } else {
+          alert("Geocoder failed due to: " + status);
+        }
+      });
+    }
+
+    function showError(error) {
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+          alert("User denied the request for Geolocation.");
+          break;
+        case error.POSITION_UNAVAILABLE:
+          alert("Location information is unavailable.");
+          break;
+        case error.TIMEOUT:
+          alert("The request to get user location timed out.");
+          break;
+        case error.UNKNOWN_ERROR:
+          alert("An unknown error occurred.");
+          break;
+      }
+    }
+  </script>
 
 </html>

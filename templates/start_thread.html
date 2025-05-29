@@ -1,581 +1,462 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Job Prediction Assistant</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <style>
-        .sidebar {
-            position: fixed;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            z-index: 100;
-            padding: 48px 0 0;
-            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
-            background-color: #343a40;
-            width: 250px;
-        }
+{% extends "layout.html" %}
 
-        .sidebar .nav-link {
-            color: #fff;
-            padding: 1rem 1.5rem;
-        }
+{% block title %}Job Prediction Assistant{% endblock %}
 
-        .sidebar .nav-link:hover {
-            color: #01634d;
-        }
+{% block styles %}
+<style>
+    /* Chat Container Styles */
+    .main-content {
+        margin-left: 92px;  /* Space for sidebar */
+        margin-top: 9px;    /* Space for header */
+        padding: 20px;
+        min-height: calc(100vh - 70px);
+        background: #f8f9fa;
+    }
 
-        .sidebar .nav-link.active {
-            color: #01634d;
-        }
+    .chat-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
 
-        .header-bar {
-            position: fixed;
-            top: 0;
-            right: 0;
-            left: 250px;
-            height: 70px;
-            background: #ffffff;
-            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
-            z-index: 99;
-            display: flex;
-            align-items: center;
-            padding: 0 30px;
-            justify-content: space-between;
-        }
+    .welcome-section {
+        text-align: center;
+        padding: 4rem 2rem;
+        max-width: 800px;
+        margin: 2rem auto;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
 
-        .header-bar .search-box {
-            position: relative;
-            width: 550px;
-            margin: 0 20px;
-        }
+    .start-btn {
+        background: #01634d;
+        color: white;
+        padding: 15px 40px;
+        border-radius: 50px;
+        font-size: 1.2rem;
+        border: none;
+        box-shadow: 0 4px 15px rgba(1, 99, 77, 0.2);
+        transition: all 0.3s ease;
+        margin-top: 20px;
+    }
 
-        .header-bar .search-box .input-group {
-            width: 100%;
-            position: relative;
-        }
+    .start-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(1, 99, 77, 0.3);
+        background: #014d3b;
+        color: white;
+    }        .chat-container {
+        display: flex;
+        flex-direction: column;
+        max-width: 1000px;
+        margin: 2rem auto;
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        height: calc(100vh - 80px);
+        overflow: hidden;
+        border: 1px solid rgba(0,0,0,0.08);
+    }
 
-        .header-bar .search-box input {
-            width: 100%;
-            height: 45px;
-            padding: 0 60px 0 25px;
-            border: 2px solid #eaeaea;
-            border-radius: 30px;
-            background: #f8f9fa;
-            font-size: 15px;
-            transition: all 0.3s ease;
-        }
+    .chat-header {
+        background: linear-gradient(135deg, #2ac289, #1a365d);
+        color: white;
+        padding: 1.5rem;
+        position: relative;
+        z-index: 10;
+    }
 
-        .header-bar .search-box input:focus {
-            border-color: #01634d;
-            background: #fff;
-            box-shadow: 0 0 0 5px rgba(1, 99, 77, 0.1);
-        }
+    .chat-header::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        right: 0;
+        height: 10px;
+        background: linear-gradient(180deg, rgba(0,0,0,0.08) 0%, transparent 100%);
+        z-index: 1;
+    }
 
-        .header-bar .search-box .btn {
-            position: absolute;
-            right: 5px;
-            top: 5px;
-            bottom: 5px;
-            width: 35px;
-            padding: 0;
-            border: none;
-            background: #01634d;
-            border-radius: 50%;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
+    .chat-header h4 {
+        margin: 0;
+        font-size: 1.4rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        letter-spacing: 0.5px;
+    }
 
-        .header-bar .search-box .btn:hover {
-            background: #014d3b;
-            transform: scale(1.05);
-        }
+    .chat-header i {
+        font-size: 1.5rem;
+        color: #ffffff;
+        background: rgba(255,255,255,0.15);
+        padding: 8px;
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+    }        .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 2rem;
+        background: #f8f9fa;
+        scrollbar-width: thin;
+        scrollbar-color:  #2ac289 #f0f2f5;
+        position: relative;
+    }
 
-        .header-bar .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
+    .chat-messages::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 100px;
+        background: linear-gradient(180deg, rgba(248,249,250,1) 0%, rgba(248,249,250,0) 100%);
+        pointer-events: none;
+        z-index: 1;
+        opacity: 0.8;
+    }
 
-        .header-bar .notification-icon {
-            position: relative;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #555;
-            font-size: 1.2rem;
-            transition: all 0.3s ease;
-            background: #f8f9fa;
-            border: 2px solid transparent;
-        }
+    .chat-messages::-webkit-scrollbar {
+        width: 6px;
+    }
 
-        .header-bar .notification-icon:hover {
-            background: rgba(1, 99, 77, 0.1);
-            color: #01634d;
-            border-color: #01634d;
-            transform: translateY(-2px);
-        }
+    .chat-messages::-webkit-scrollbar-track {
+        background: #f0f2f5;
+    }
 
-        .header-bar .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #dc3545;
-            color: #fff;
-            font-size: 11px;
-            font-weight: 600;
-            height: 20px;
-            min-width: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            border: 2px solid #fff;
-            padding: 0 6px;
-        }
+    .chat-messages::-webkit-scrollbar-thumb {
+        background: #2c5282;
+        border-radius: 10px;
+    }
 
-        .header-bar .user-menu .dropdown-toggle {
-            width: 40px;
-            height: 40px;
-            padding: 0;
-            border: none;
-            background: #f8f9fa;
-            border-radius: 50%;
-            color: #555;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
+    .message {
+        margin-bottom: 1.5rem;
+        padding: 1.25rem;
+        border-radius: 20px;
+        max-width: 80%;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        animation: messageSlide 0.4s ease-out;
+        position: relative;
+        z-index: 2;
+    }
 
-        .header-bar .user-menu .dropdown-toggle:hover {
-            background: rgba(1, 99, 77, 0.1);
-            color: #01634d;
+    @keyframes messageSlide {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
         }
-
-        .header-bar .dropdown-menu {
-            margin-top: 15px;
-            border: none;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
-            border-radius: 12px;
-            padding: 8px 0;
+        to {
+            opacity: 1;
+            transform: translateY(0);
         }
+    }
 
-        .header-bar .dropdown-item {
-            padding: 10px 20px;
-            color: #555;
-            font-weight: 500;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+    .bot-message {
+        background-color: white;
+        margin-right: 25%;
+        border-bottom-left-radius: 5px;
+    }
 
-        .header-bar .dropdown-item i {
-            color: #01634d;
-            font-size: 1.1rem;
-            width: 20px;
-            text-align: center;
-        }
+    .bot-message.fraud-alert {
+        background-color: #ffe6e6;
+        border-left: 4px solid #dc3545;
+    }
 
-        .header-bar .dropdown-item:hover {
-            background: rgba(1, 99, 77, 0.1);
-            color: #01634d;
-        }
+    .bot-message.safe-alert {
+        background-color: #e6ffe6;
+        border-left: 4px solid #28a745;
+    }
 
-        .main-content {
-            margin-left: 250px;
-            margin-top: 70px;
-            padding: 20px;
-        }
+    .analysis-details {
+        margin-top: 10px;
+        padding: 10px;
+        background: rgba(0,0,0,0.05);
+        border-radius: 5px;
+        font-size: 0.9em;
+    }        .user-message {
+        background: linear-gradient(135deg, #01634d, #014d3b);
+        color: white;
+        margin-left: 25%;
+        text-align: right;
+        border-bottom-right-radius: 5px;
+        box-shadow: 0 3px 10px rgba(1, 99, 77, 0.2);
+    }
 
-        .chat-container {
-            max-width: 800px;
-            margin: 2rem auto;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        }
+    /* Typing indicator animation */
+    @keyframes typingAnimation {
+        0% { opacity: 0.4; }
+        50% { opacity: 1; }
+        100% { opacity: 0.4; }
+    }
 
-        .chat-header {
-            background: #01634d;
-            color: white;
-            padding: 1rem;
-            border-radius: 10px 10px 0 0;
-        }
+    .bot-message .fa-spinner {
+        animation: typingAnimation 1s infinite;
+        margin-right: 8px;
+    }.chat-input {
+        padding: 1.5rem;
+        background: white;
+        border-top: 1px solid rgba(0,0,0,0.08);
+        position: relative;
+        z-index: 10;
+    }
 
-        .chat-messages {
-            height: 400px;
-            overflow-y: auto;
-            padding: 1rem;
-        }
+    .chat-input::before {
+        content: '';
+        position: absolute;
+        top: -20px;
+        left: 0;
+        right: 0;
+        height: 20px;
+        background: linear-gradient(0deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+        pointer-events: none;
+    }
 
-        .message {
-            margin-bottom: 1rem;
-            padding: 0.5rem 1rem;
-            border-radius: 1rem;
-        }
+    .chat-input form {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        background: #f8f9fa;
+        padding: 8px;
+        border-radius: 16px;
+        border: 1px solid rgba(0,0,0,0.08);
+    }
 
-        .bot-message {
-            background-color: #f0f2f5;
-            margin-right: 25%;
-        }
+    .chat-input input {
+        flex: 1;
+        padding: 16px 24px;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        background: transparent;
+        transition: all 0.3s ease;
+        color: #2d3748;
+    }
 
-        .user-message {
-            background-color: #01634d;
-            color: white;
-            margin-left: 25%;
-            text-align: right;
-        }
+    .chat-input input:focus {
+        outline: none;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }        .chat-input button {            background: linear-gradient(135deg, #2c5282, #1a365d);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 16px 32px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(44, 82, 130, 0.2);
+    }
 
-        .chat-input {
-            padding: 1rem;
-            border-top: 1px solid #dee2e6;
-        }
+    .chat-input button:hover {
+        background: linear-gradient(135deg, #1a365d, #0f2341);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(44, 82, 130, 0.3);
+    }
 
-        .location-banner {
-            margin: 1rem;
-            padding: 1rem;
-            background-color: #e9ecef;
-            border-radius: 5px;
-        }
+    .chat-input button i {
+        font-size: 1.2rem;
+        background: rgba(255,255,255,0.15);
+        padding: 6px;
+        border-radius: 8px;
+    }.analysis-result {
+        padding: 15px;
+        border-radius: 12px;
+        margin-top: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        border: 1px solid rgba(0,0,0,0.08);
+    }
 
-        .prediction-form {
-            display: none;
-            padding: 1rem;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-            margin: 1rem;
-        }
+    .analysis-result.fraud {
+        background: linear-gradient(to right, #ffe6e6, #fff);
+        border-left: 4px solid #dc3545;
+    }
 
-        .analysis-card {
-            padding: 1rem;
-            border-radius: 5px;
-            margin: 1rem 0;
-        }
-    </style>
-</head>
-<body>
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('index') }}">
-                    <i class="fas fa-home"></i>
-                    Homes
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" href="{{ url_for('start_thread') }}">
-                    <i class="fas fa-plus"></i>
-                    Start New Thread
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('job_threads') }}">
-                    <i class="fas fa-search"></i>
-                    Job Search Threads
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-bookmark"></i>
-                    Saved Jobs
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-compass"></i>
-                    Explore
-                </a>
-            </li>
-        </ul>
-    </div>
+    .analysis-result.legitimate {
+        background: linear-gradient(to right, #e6ffe6, #fff);
+        border-left: 4px solid #28a745;
+    }
 
-    <!-- Header Bar -->
-    <div class="header-bar">
-        <div class="search-box">
-            <div class="input-group">
-                <input type="text" class="form-control" placeholder="Search for jobs...">
-                <button class="btn btn-outline-secondary" type="button">
-                    <i class="fas fa-search"></i>
-                </button>
+    .message-content {
+        line-height: 1.5;
+    }
+
+    .message-content ul {
+        margin: 0.75rem 0;
+        padding-left: 1.5rem;
+    }
+
+    .message-content li {
+        margin: 0.5rem 0;
+    }        .result-header {
+        font-weight: 600;
+        margin-bottom: 10px;
+        font-size: 1.1rem;
+        color: #2d3436;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .result-header i {
+        font-size: 1.2rem;
+    }
+
+    .result-details {
+        font-size: 0.95rem;
+        color: #2d3436;
+        line-height: 1.6;
+    }
+
+    .analysis-points {
+        margin-top: 12px;
+        background: rgba(255, 255, 255, 0.7);
+        padding: 12px 15px;
+        border-radius: 8px;
+    }
+
+    .analysis-points strong {
+        display: block;
+        margin-bottom: 8px;
+        color: #2d3436;
+    }
+
+    .analysis-points ul {
+        margin: 0;
+        padding-left: 1.5rem;
+    }
+
+    .analysis-points li {
+        margin: 6px 0;
+        color: #4a4a4a;
+    }    </style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="chat-wrapper">
+        <div class="chat-container" id="chatContainer">
+            <div class="chat-header">
+                <h4><i class="fas fa-shield-alt"></i> Job Fraud Detection Assistant</h4>
             </div>
-        </div>
-        <div class="user-menu">
-            <a href="#" class="notification-icon">
-                <i class="fas fa-bell"></i>
-                <span class="notification-badge">3</span>
-            </a>
-            <a href="#" class="notification-icon">
-                <i class="fas fa-envelope"></i>
-                <span class="notification-badge">5</span>
-            </a>
-            <div class="dropdown">
-                <button class="btn btn-link dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
-                    <i class="fas fa-user-circle fa-lg"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="#"><i class="fas fa-user"></i> Profile</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Settings</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-                </ul>
-            </div>
-        </div>
-    </div>
-
-    <!-- Existing chat content -->
-    <div class="main-content">
-        <div class="container">
-            <div class="chat-container">
-                <div class="chat-header">
-                    <h4><i class="fas fa-robot mr-2"></i> Job Prediction Assistant</h4>
-                </div>
-
-                <div id="locationBanner" class="location-banner" style="display: none;">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <span id="locationMessage"></span>
-                </div>
-
-                <div class="chat-messages" id="chatMessages">
-                    <!-- Messages will appear here -->
-                </div>
-
-                <div id="predictionForm" class="prediction-form">
-                    <div class="mb-3">
-                        <label class="form-label">Job Title</label>
-                        <input type="text" class="form-control" id="jobTitle">
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="bot-message">
+                    <div class="message-content">
+                        <p>Hello! I'm your Job Fraud Detection Assistant. I can help you:</p>
+                        <ul>
+                            <li>Analyze job posting URLs for potential fraud</li>
+                            <li>Review job descriptions and details</li>
+                            <li>Answer questions about job scams</li>
+                        </ul>
+                        <p>What would you like to analyze today?</p>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Job Description</label>
-                        <textarea class="form-control" id="jobDescription" rows="3"></textarea>
-                    </div>
-                    <button class="btn btn-primary" onclick="predictJob()">Predict</button>
                 </div>
+            </div>
 
-                <div class="chat-input">
-                    <form id="chatForm" class="input-group">
-                        <input type="text" class="form-control" placeholder="Type your message..." id="messageInput">
-                        <button class="btn btn-primary" type="submit">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </form>
-                </div>
-
-                <div class="recent-analyses">
-                    <!-- Recent analyses will be displayed here -->
-                </div>
+            <div class="chat-input">
+                <form id="chatForm" class="input-group">
+                    <input type="text" class="form-control" 
+                           placeholder="Share a job URL or describe the job posting..." 
+                           id="messageInput">
+                    <button class="btn" type="submit">
+                        <i class="fas fa-paper-plane"></i> Analyze
+                    </button>
+                </form>
             </div>
         </div>
     </div>
+</div>
+{% endblock %}
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        const botResponses = {
-            ar: {
-                greeting: 'مرحباً! كيف يمكنني مساعدتك؟',
-                location: 'أرى أنك في {location}. هل تريد البحث عن وظائف في منطقتك؟',
-                predict_prompt: 'يمكنني مساعدتك في تحليل عرض العمل. هل يمكنك مشاركة التفاصيل؟',
-                analyzing: 'جاري تحليل عرض العمل...',
-                fraudulent: 'تحذير! هذا العرض يبدو مشبوهاً',
-                legitimate: 'هذا العرض يبدو شرعياً',
-                help: 'يمكنني مساعدتك في تحليل عروض العمل والتحقق من مصداقيتها'
-            },
-            fr: {
-                greeting: 'Bonjour! Comment puis-je vous aider?',
-                location: 'Je vois que vous êtes à {location}. Voulez-vous chercher des emplois dans votre région?',
-                predict_prompt: 'Je peux vous aider à analyser l\'offre d\'emploi. Pouvez-vous partager les détails?',
-                analyzing: 'Analyse de l\'offre d\'emploi en cours...',
-                fraudulent: 'Attention! Cette offre semble suspecte',
-                legitimate: 'Cette offre semble légitime',
-                help: 'Je peux vous aider à analyser les offres d\'emploi et vérifier leur légitimité'
-            },
-            en: {
-                greeting: 'Hello! How can I help you today?',
-                location: 'I see you\'re in {location}. Would you like to search for jobs in your area?',
-                predict_prompt: 'I can help you analyze the job offer. Can you share the details?',
-                analyzing: 'Analyzing job offer...',
-                fraudulent: 'Warning! This offer appears to be suspicious',
-                legitimate: 'This offer appears to be legitimate',
-                help: 'I can help you analyze job offers and verify their legitimacy'
-            }
-        };
+{% block scripts %}
+<script>
+    function addMessage(content, isUser, analysisResult = null) {
+        const messageDiv = $('<div>')
+            .addClass('message')
+            .addClass(isUser ? 'user-message' : 'bot-message');
 
-        let userLocation = '';
-
-        function getLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(showPosition);
-            }
-        }
-
-        function showPosition(position) {
-            // Using OpenStreetMap Nominatim for reverse geocoding
-            fetch(`https://nominatim.openstreetmap.org/reverse?lat=${position.coords.latitude}&lon=${position.coords.longitude}&format=json`)
-                .then(response => response.json())
-                .then(data => {
-                    userLocation = data.address.city || data.address.town || 'Tunis';
-                    const initialLang = 'fr';
-                    const locationMsg = botResponses[initialLang].location.replace('{location}', userLocation);
-                    $('#locationMessage').text(locationMsg);
-                    $('#locationBanner').show();
-                    addMessage(botResponses[initialLang].greeting, false);
-                });
-        }
-
-        function addMessage(message, isUser) {
-            const messageDiv = $('<div>')
-                .addClass('message')
-                .addClass(isUser ? 'user-message' : 'bot-message')
-                .text(message);
-            $('#chatMessages').append(messageDiv);
-            $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
-        }
-
-        function predictJob() {
-            const jobData = {
-                title: $('#jobTitle').val(),
-                description: $('#jobDescription').val()
-            };
-
-            // Afficher message d'analyse
-            addMessage(botResponses[currentLang].analyzing, false);
-
-            $.ajax({
-                url: "{{ url_for('chat_predict') }}",
-                method: 'POST',
-                data: {
-                    message: currentLang,
-                    location: userLocation,
-                    jobData: JSON.stringify(jobData)
-                },
-                success: function(response) {
-                    const messageClass = response.is_fraudulent ? 'text-danger' : 'text-success';
-                    const icon = response.is_fraudulent ? 'exclamation-triangle' : 'check-circle';
-                    
-                    addMessage(response.response, false);
-                    $('#predictionForm').hide();
-
-                    // Ajouter au tableau des analyses récentes
-                    updateRecentAnalyses({
-                        title: jobData.title,
-                        is_fraudulent: response.is_fraudulent,
-                        confidence: response.confidence
-                    });
-                }
-            });
-        }
-
-        function updateRecentAnalyses(analysis) {
-            const cardHtml = `
-                <div class="analysis-card ${analysis.is_fraudulent ? 'border-danger' : 'border-success'}">
-                    <h5>${analysis.title}</h5>
-                    <div class="d-flex justify-content-between">
-                        <span class="badge ${analysis.is_fraudulent ? 'bg-danger' : 'bg-success'}">
-                            ${analysis.is_fraudulent ? 'Fraudulent' : 'Legitimate'}
-                        </span>
-                        <span>Confidence: ${(analysis.confidence * 100).toFixed(0)}%</span>
+        if (analysisResult) {
+            const confidence = Math.round(analysisResult.confidence * 100);
+            const resultHtml = `
+                <div class="analysis-result ${analysisResult.is_fraudulent ? 'fraud' : 'legitimate'}">
+                    <div class="result-header">
+                        ${analysisResult.is_fraudulent ? 
+                            `<i class="fas fa-exclamation-triangle"></i> High Risk Alert (${confidence}% confidence)` :
+                            `<i class="fas fa-check-circle"></i> Legitimate Job Posting (${confidence}% confidence)`
+                        }
+                    </div>
+                    <div class="result-details">
+                        <p>${analysisResult.response}</p>
+                        ${analysisResult.details ? `
+                            <div class="analysis-points">
+                                <strong>Analysis Details:</strong>
+                                <ul>
+                                    ${analysisResult.details.map(detail => `<li>${detail}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
             `;
-            
-            $('.recent-analyses').prepend(cardHtml);
+            messageDiv.html(resultHtml);
+        } else {
+            messageDiv.text(content);
         }
 
-        function detectLanguage(text) {
-            // Détection des caractères arabes
-            const arabicPattern = /[\u0600-\u06FF]/;
-            if (arabicPattern.test(text)) return 'ar';
+        $('#chatMessages').append(messageDiv);
+        $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+    }
 
-            // Détection des caractères spéciaux français
-            const frenchPattern = /[éèêëàâäùûüçîïôö]/i;
-            if (frenchPattern.test(text)) return 'fr';
+    $('#chatForm').on('submit', function(e) {
+        e.preventDefault();
+        const message = $('#messageInput').val().trim();
+        if (!message) return;
 
-            // Détection des mots-clés français courants
-            const frenchKeywords = ['bonjour', 'salut', 'emploi', 'analyser', 'aide'];
-            if (frenchKeywords.some(word => text.toLowerCase().includes(word))) return 'fr';
+        // Add user message
+        addMessage(message, true);
+        $('#messageInput').val('');
 
-            // Par défaut, on considère que c'est de l'anglais
-            return 'en';
-        }
+        // Show typing indicator
+        const typingDiv = $('<div class="bot-message"><i class="fas fa-spinner fa-spin"></i> Analyzing...</div>');
+        $('#chatMessages').append(typingDiv);
+        $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
 
-        function getResponse(message, lang) {
-            const responses = botResponses[lang];
-            message = message.toLowerCase();
-
-            // Mots-clés multilingues
-            const greetings = {
-                ar: ['مرحبا', 'السلام'],
-                fr: ['bonjour', 'salut', 'bonsoir'],
-                en: ['hello', 'hi', 'hey']
-            };
-
-            const analysis = {
-                ar: ['تحليل', 'فحص'],
-                fr: ['analyser', 'vérifier', 'examiner'],
-                en: ['analyze', 'check', 'predict']
-            };
-
-            const help = {
-                ar: ['مساعدة', 'ساعدني'],
-                fr: ['aide', 'aider', 'comment'],
-                en: ['help', 'assist', 'how']
-            };
-
-            // Vérification des mots-clés dans toutes les langues
-            if (greetings[lang].some(word => message.includes(word))) {
-                return responses.greeting;
-            }
-            if (analysis[lang].some(word => message.includes(word))) {
-                return responses.predict_prompt;
-            }
-            if (help[lang].some(word => message.includes(word))) {
-                return responses.help;
-            }
-
-            return responses.help;
-        }
-
-        $('#chatForm').on('submit', function(e) {
-            e.preventDefault();
-            const message = $('#messageInput').val();
-            if (!message) return;
-
-            const lang = detectLanguage(message);
-            addMessage(message, true);
-            $('#messageInput').val('');
-
-            if (message.toLowerCase().includes('predict') || 
-                message.includes('تحليل') || 
-                message.includes('analyser')) {
-                $('#predictionForm').show();
-            }
-
-            const botResponse = getResponse(message, lang);
-            addMessage(botResponse, false);
-
-            $.ajax({
-                url: "{{ url_for('chat_predict') }}",
-                method: 'POST',
-                data: { message: message, location: userLocation },
-                success: function(response) {
-                    addMessage(response.response, false);
+        // Send for analysis
+        $.ajax({
+            url: "{{ url_for('chat_predict') }}",
+            method: 'POST',
+            data: { message: message },
+            success: function(response) {
+                // Remove typing indicator
+                typingDiv.remove();
+                
+                if (response.error) {
+                    addMessage("Sorry, I encountered an error while analyzing. Please try again.", false);
+                    return;
                 }
-            });
-        });
 
-        // Initialize by getting location
-        getLocation();
-    </script>
-</body>
-</html>
+                // Add analysis result
+                addMessage(null, false, {
+                    is_fraudulent: response.is_fraudulent,
+                    confidence: response.confidence,
+                    response: response.response,
+                    details: response.details
+                });
+
+                // Add follow-up prompt
+                setTimeout(() => {
+                    addMessage("Would you like to analyze another job posting?", false);
+                }, 1000);
+            },
+            error: function() {
+                typingDiv.remove();
+                addMessage("Sorry, I encountered an error while analyzing. Please try again.", false);
+            }
+        });
+    });
+</script>
+{% endblock %}
