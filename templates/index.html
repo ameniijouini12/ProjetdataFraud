@@ -252,35 +252,6 @@
       margin: 10px 0;
       border-top-color: #eee;
     }
-
-    .analysis-results {
-      margin-top: 2rem;
-    }
-
-    .analysis-results h3 {
-      margin-bottom: 1rem;
-    }
-
-    .analysis-results .card {
-      border: 1px solid #eaeaea;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
-    .analysis-results .card-title {
-      font-size: 1.25rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .analysis-results .card-text {
-      margin-bottom: 1rem;
-    }
-
-    .analysis-results .list-group-item {
-      border: none;
-      padding: 0.5rem 1rem;
-      font-size: 0.9rem;
-    }
   </style>
 </head>
 
@@ -420,33 +391,6 @@
             </div>
           </div>
         </div>
-
-        {% if prediction is defined %}
-<div class="analysis-results mt-4">
-    <h3>Model Analysis Results</h3>
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">
-                {% if prediction == 1 %}
-                    <span class="text-danger">⚠️ Fraudulent Job Posting</span>
-                {% else %}
-                    <span class="text-success">✅ Legitimate Job Posting</span>
-                {% endif %}
-            </h5>
-            <p class="card-text">Confidence Score: {{ "%.1f"|format(confidence) }}%</p>
-            
-            <h6>Key Indicators:</h6>
-            <ul class="list-group">
-                {% for feature, importance in important_features %}
-                <li class="list-group-item">
-                    {{ feature }} (weight: {{ "%.3f"|format(importance) }})
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
-</div>
-{% endif %}
       </div>
     </div>
   </body>

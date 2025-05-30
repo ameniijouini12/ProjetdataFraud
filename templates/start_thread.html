@@ -346,6 +346,469 @@
             <div class="chat-messages" id="chatMessages">
                 <div class="bot-message">
                     <div class="message-content">
+                        <p>Hello! I'm your Job Fraud Detection Assistant. I can help you:</p>
+                        <ul>
+                            <li>Analyze job posting URLs for potential fraud</li>
+                            <li>Review job descriptions and details</li>
+                            <li>Answer questions about job scams</li>
+                        </ul>
+                        <p>What would you like to analyze today?</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input">
+                <form id="chatForm" class="input-group">
+                    <input type="text" class="form-control" 
+                           placeholder="Share a job URL or describe the job posting..." 
+                           id="messageInput">
+                    <button class="btn" type="submit">
+                        <i class="fas fa-paper-plane"></i> Analyze
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function addMessage(content, isUser, analysisResult = null) {
+        const messageDiv = $('<div>')
+            .addClass('message')
+            .addClass(isUser ? 'user-message' : 'bot-message');
+
+        if (analysisResult) {
+            const confidence = Math.round(analysisResult.confidence * 100);
+            const resultHtml = `
+                <div class="analysis-result ${analysisResult.is_fraudulent ? 'fraud' : 'legitimate'}">
+                    <div class="result-header">
+                        ${analysisResult.is_fraudulent ? 
+                            `<i class="fas fa-exclamation-triangle"></i> High Risk Alert (${confidence}% confidence)` :
+                            `<i class="fas fa-check-circle"></i> Legitimate Job Posting (${confidence}% confidence)`
+                        }
+                    </div>
+                    <div class="result-details">
+                        <p>${analysisResult.response}</p>
+                        ${analysisResult.details ? `
+                            <div class="analysis-points">
+                                <strong>Analysis Details:</strong>
+                                <ul>
+                                    ${analysisResult.details.map(detail => `<li>${detail}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            messageDiv.html(resultHtml);
+        } else {
+            messageDiv.text(content);
+        }
+
+        $('#chatMessages').append(messageDiv);
+        $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+    }
+
+    $('#chatForm').on('submit', function(e) {
+        e.preventDefault();
+        const message = $('#messageInput').val().trim();
+        if (!message) return;
+
+        // Add user message
+        addMessage(message, true);
+        $('#messageInput').val('');
+
+        // Show typing indicator
+        const typingDiv = $('<div class="bot-message"><i class="fas fa-spinner fa-spin"></i> Analyzing...</div>');
+        $('#chatMessages').append(typingDiv);
+        $('#chatMessages').scrollTop($('#chatMessages')[0].scrollHeight);
+
+        // Send for analysis
+        $.ajax({
+            url: "{{ url_for('chat_predict') }}",
+            method: 'POST',
+            data: { message: message },
+            success: function(response) {
+                // Remove typing indicator
+                typingDiv.remove();
+                
+                if (response.error) {
+                    addMessage("Sorry, I encountered an error while analyzing. Please try again.", false);
+                    return;
+                }
+
+                // Add analysis result
+                addMessage(null, false, {
+                    is_fraudulent: response.is_fraudulent,
+                    confidence: response.confidence,
+                    response: response.response,
+                    details: response.details
+                });
+
+                // Add follow-up prompt
+                setTimeout(() => {
+                    addMessage("Would you like to analyze another job posting?", false);
+                }, 1000);
+            },
+            error: function() {
+                typingDiv.remove();
+                addMessage("Sorry, I encountered an error while analyzing. Please try again.", false);
+            }
+        });
+    });
+</script>
+{% endblock %}
+
+{% extends "layout.html" %}
+
+{% block title %}Job Prediction Assistant{% endblock %}
+
+{% block styles %}
+<style>
+    /* Chat Container Styles */
+    .main-content {
+        margin-left: 92px;  /* Space for sidebar */
+        margin-top: 9px;    /* Space for header */
+        padding: 20px;
+        min-height: calc(100vh - 70px);
+        background: #f8f9fa;
+    }
+
+    .chat-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .welcome-section {
+        text-align: center;
+        padding: 4rem 2rem;
+        max-width: 800px;
+        margin: 2rem auto;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+
+    .start-btn {
+        background: #01634d;
+        color: white;
+        padding: 15px 40px;
+        border-radius: 50px;
+        font-size: 1.2rem;
+        border: none;
+        box-shadow: 0 4px 15px rgba(1, 99, 77, 0.2);
+        transition: all 0.3s ease;
+        margin-top: 20px;
+    }
+
+    .start-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(1, 99, 77, 0.3);
+        background: #014d3b;
+        color: white;
+    }        .chat-container {
+        display: flex;
+        flex-direction: column;
+        max-width: 1000px;
+        margin: 2rem auto;
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        height: calc(100vh - 80px);
+        overflow: hidden;
+        border: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .chat-header {
+        background: linear-gradient(135deg, #2ac289, #1a365d);
+        color: white;
+        padding: 1.5rem;
+        position: relative;
+        z-index: 10;
+    }
+
+    .chat-header::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        right: 0;
+        height: 10px;
+        background: linear-gradient(180deg, rgba(0,0,0,0.08) 0%, transparent 100%);
+        z-index: 1;
+    }
+
+    .chat-header h4 {
+        margin: 0;
+        font-size: 1.4rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        letter-spacing: 0.5px;
+    }
+
+    .chat-header i {
+        font-size: 1.5rem;
+        color: #ffffff;
+        background: rgba(255,255,255,0.15);
+        padding: 8px;
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+    }        .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 2rem;
+        background: #f8f9fa;
+        scrollbar-width: thin;
+        scrollbar-color:  #2ac289 #f0f2f5;
+        position: relative;
+    }
+
+    .chat-messages::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 100px;
+        background: linear-gradient(180deg, rgba(248,249,250,1) 0%, rgba(248,249,250,0) 100%);
+        pointer-events: none;
+        z-index: 1;
+        opacity: 0.8;
+    }
+
+    .chat-messages::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .chat-messages::-webkit-scrollbar-track {
+        background: #f0f2f5;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+        background: #2c5282;
+        border-radius: 10px;
+    }
+
+    .message {
+        margin-bottom: 1.5rem;
+        padding: 1.25rem;
+        border-radius: 20px;
+        max-width: 80%;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        animation: messageSlide 0.4s ease-out;
+        position: relative;
+        z-index: 2;
+    }
+
+    @keyframes messageSlide {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .bot-message {
+        background-color: white;
+        margin-right: 25%;
+        border-bottom-left-radius: 5px;
+    }
+
+    .bot-message.fraud-alert {
+        background-color: #ffe6e6;
+        border-left: 4px solid #dc3545;
+    }
+
+    .bot-message.safe-alert {
+        background-color: #e6ffe6;
+        border-left: 4px solid #28a745;
+    }
+
+    .analysis-details {
+        margin-top: 10px;
+        padding: 10px;
+        background: rgba(0,0,0,0.05);
+        border-radius: 5px;
+        font-size: 0.9em;
+    }        .user-message {
+        background: linear-gradient(135deg, #01634d, #014d3b);
+        color: white;
+        margin-left: 25%;
+        text-align: right;
+        border-bottom-right-radius: 5px;
+        box-shadow: 0 3px 10px rgba(1, 99, 77, 0.2);
+    }
+
+    /* Typing indicator animation */
+    @keyframes typingAnimation {
+        0% { opacity: 0.4; }
+        50% { opacity: 1; }
+        100% { opacity: 0.4; }
+    }
+
+    .bot-message .fa-spinner {
+        animation: typingAnimation 1s infinite;
+        margin-right: 8px;
+    }.chat-input {
+        padding: 1.5rem;
+        background: white;
+        border-top: 1px solid rgba(0,0,0,0.08);
+        position: relative;
+        z-index: 10;
+    }
+
+    .chat-input::before {
+        content: '';
+        position: absolute;
+        top: -20px;
+        left: 0;
+        right: 0;
+        height: 20px;
+        background: linear-gradient(0deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+        pointer-events: none;
+    }
+
+    .chat-input form {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        background: #f8f9fa;
+        padding: 8px;
+        border-radius: 16px;
+        border: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .chat-input input {
+        flex: 1;
+        padding: 16px 24px;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        background: transparent;
+        transition: all 0.3s ease;
+        color: #2d3748;
+    }
+
+    .chat-input input:focus {
+        outline: none;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }        .chat-input button {            background: linear-gradient(135deg, #2c5282, #1a365d);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 16px 32px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(44, 82, 130, 0.2);
+    }
+
+    .chat-input button:hover {
+        background: linear-gradient(135deg, #1a365d, #0f2341);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(44, 82, 130, 0.3);
+    }
+
+    .chat-input button i {
+        font-size: 1.2rem;
+        background: rgba(255,255,255,0.15);
+        padding: 6px;
+        border-radius: 8px;
+    }.analysis-result {
+        padding: 15px;
+        border-radius: 12px;
+        margin-top: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        border: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .analysis-result.fraud {
+        background: linear-gradient(to right, #ffe6e6, #fff);
+        border-left: 4px solid #dc3545;
+    }
+
+    .analysis-result.legitimate {
+        background: linear-gradient(to right, #e6ffe6, #fff);
+        border-left: 4px solid #28a745;
+    }
+
+    .message-content {
+        line-height: 1.5;
+    }
+
+    .message-content ul {
+        margin: 0.75rem 0;
+        padding-left: 1.5rem;
+    }
+
+    .message-content li {
+        margin: 0.5rem 0;
+    }        .result-header {
+        font-weight: 600;
+        margin-bottom: 10px;
+        font-size: 1.1rem;
+        color: #2d3436;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .result-header i {
+        font-size: 1.2rem;
+    }
+
+    .result-details {
+        font-size: 0.95rem;
+        color: #2d3436;
+        line-height: 1.6;
+    }
+
+    .analysis-points {
+        margin-top: 12px;
+        background: rgba(255, 255, 255, 0.7);
+        padding: 12px 15px;
+        border-radius: 8px;
+    }
+
+    .analysis-points strong {
+        display: block;
+        margin-bottom: 8px;
+        color: #2d3436;
+    }
+
+    .analysis-points ul {
+        margin: 0;
+        padding-left: 1.5rem;
+    }
+
+    .analysis-points li {
+        margin: 6px 0;
+        color: #4a4a4a;
+    }    </style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="chat-wrapper">
+        <div class="chat-container" id="chatContainer">
+            <div class="chat-header">
+                <h4><i class="fas fa-shield-alt"></i> Job Fraud Detection Assistant</h4>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="bot-message">
+                    <div class="message-content">
                         <p>Hello! I'm your Job Fraud Detection Assistant powered by Machine Learning. I can help you:</p>
                         <ul>
                             <li>Analyze job descriptions for potential fraud</li>
