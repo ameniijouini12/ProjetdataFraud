@@ -7,8 +7,8 @@
     .dashboard-container {
         position: fixed;
         top: 0;
-        left: 0;
-        width: 100%;
+        left: 250px; /* Add space for sidebar */
+        width: calc(100% - 250px); /* Adjust width to account for sidebar */
         height: 100vh;
         display: flex;
         justify-content: center;
@@ -18,26 +18,29 @@
     }
 
     .dashboard-image {
-        width: 86%;
-        height: 86%;
-       
+        width: 90%;
+        height: 90%;
     }
 
-    /* Override layout margins for full screen */
+    /* Override layout margins for dashboard */
     .main-content {
-        margin: 0 !important;
+        margin-left: 250px !important;
         padding: 0 !important;
         min-height: 100vh !important;
     }
 
-    /* Hide header and sidebar for full screen view */
-    .header-bar, .sidebar {
+    /* Remove the sidebar hiding rule */
+    .header-bar {
         display: none !important;
     }
 </style>
 {% endblock %}
 
-{% block content %}
+{% block content %}  
+{% with active_page=request.endpoint %}
+    {% include 'components/sidebar.html' %}
+    {% endwith %}
+
 <div class="dashboard-container">
     <img src="{{ url_for('static', filename='powerbi.png') }}" alt="PowerBI Dashboard" class="dashboard-image">
 </div>

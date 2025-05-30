@@ -346,13 +346,14 @@
             <div class="chat-messages" id="chatMessages">
                 <div class="bot-message">
                     <div class="message-content">
-                        <p>Hello! I'm your Job Fraud Detection Assistant. I can help you:</p>
+                        <p>Hello! I'm your Job Fraud Detection Assistant powered by Machine Learning. I can help you:</p>
                         <ul>
-                            <li>Analyze job posting URLs for potential fraud</li>
-                            <li>Review job descriptions and details</li>
-                            <li>Answer questions about job scams</li>
+                            <li>Analyze job descriptions for potential fraud</li>
+                            <li>Detect suspicious patterns in job postings</li>
+                            <li>Evaluate job offers using our trained model</li>
+                            <li>Provide confidence scores and detailed analysis</li>
                         </ul>
-                        <p>What would you like to analyze today?</p>
+                        <p>Please paste a job description or provide details about a job posting for analysis.</p>
                     </div>
                 </div>
             </div>
@@ -360,7 +361,7 @@
             <div class="chat-input">
                 <form id="chatForm" class="input-group">
                     <input type="text" class="form-control" 
-                           placeholder="Share a job URL or describe the job posting..." 
+                           placeholder="Paste job description here for ML analysis..." 
                            id="messageInput">
                     <button class="btn" type="submit">
                         <i class="fas fa-paper-plane"></i> Analyze
@@ -374,35 +375,63 @@
 
 {% block scripts %}
 <script>
-    function addMessage(content, isUser, analysisResult = null) {
+    function addMessage(content, isUser, response = null) {
         const messageDiv = $('<div>')
             .addClass('message')
             .addClass(isUser ? 'user-message' : 'bot-message');
 
-        if (analysisResult) {
-            const confidence = Math.round(analysisResult.confidence * 100);
-            const resultHtml = `
-                <div class="analysis-result ${analysisResult.is_fraudulent ? 'fraud' : 'legitimate'}">
-                    <div class="result-header">
-                        ${analysisResult.is_fraudulent ? 
-                            `<i class="fas fa-exclamation-triangle"></i> High Risk Alert (${confidence}% confidence)` :
-                            `<i class="fas fa-check-circle"></i> Legitimate Job Posting (${confidence}% confidence)`
-                        }
+        if (response) {
+            if (response.is_greeting) {
+                messageDiv.html(`<div class="message-content">${response.response}</div>`);
+            } else if (response.is_url) {
+                const resultHtml = `
+                    <div class="analysis-result ${response.is_trusted ? 'legitimate' : 'fraud'}">
+                        <div class="result-header">
+                            ${response.is_trusted ? 
+                                '<i class="fas fa-check-circle"></i> Trusted Job Platform' :
+                                '<i class="fas fa-exclamation-triangle"></i> Caution Required'
+                            }
+                        </div>
+                        <div class="result-details">
+                            <p>${response.response}</p>
+                            ${response.details.length ? `
+                                <div class="analysis-points">
+                                    <strong>Analysis Details:</strong>
+                                    <ul>
+                                        ${response.details.map(detail => `<li>${detail}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
+                        </div>
                     </div>
-                    <div class="result-details">
-                        <p>${analysisResult.response}</p>
-                        ${analysisResult.details ? `
-                            <div class="analysis-points">
-                                <strong>Analysis Details:</strong>
-                                <ul>
-                                    ${analysisResult.details.map(detail => `<li>${detail}</li>`).join('')}
-                                </ul>
-                            </div>
-                        ` : ''}
+                `;
+                messageDiv.html(resultHtml);
+            } else {
+                // Regular analysis result
+                const confidence = Math.round(response.confidence * 100);
+                const resultHtml = `
+                    <div class="analysis-result ${response.is_fraudulent ? 'fraud' : 'legitimate'}">
+                        <div class="result-header">
+                            ${response.is_fraudulent ? 
+                                `<i class="fas fa-exclamation-triangle"></i> High Risk Alert (${confidence}% confidence)` :
+                                `<i class="fas fa-check-circle"></i> Legitimate Job Posting (${confidence}% confidence)`
+                            }
+                        </div>
+                        <div class="result-details">
+                            <p>${response.response}</p>
+                            ${response.details ? `
+                                <div class="analysis-points">
+                                    <strong>Analysis Details:</strong>
+                                    <ul>
+                                        ${response.details.map(detail => `<li>${detail}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
+                        </div>
                     </div>
-                </div>
-            `;
-            messageDiv.html(resultHtml);
+                `;
+                messageDiv.html(resultHtml);
+            }
         } else {
             messageDiv.text(content);
         }
@@ -440,17 +469,9 @@
                 }
 
                 // Add analysis result
-                addMessage(null, false, {
-                    is_fraudulent: response.is_fraudulent,
-                    confidence: response.confidence,
-                    response: response.response,
-                    details: response.details
-                });
+                addMessage(null, false, response);
 
-                // Add follow-up prompt
-                setTimeout(() => {
-                    addMessage("Would you like to analyze another job posting?", false);
-                }, 1000);
+                // Don't add follow-up prompt anymore
             },
             error: function() {
                 typingDiv.remove();
